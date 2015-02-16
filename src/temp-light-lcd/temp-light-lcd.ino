@@ -26,8 +26,8 @@ int adc_key_in  = 0;
 
 // change these to adjust the range of temperatures you want to measure 
 // (these are in Farenheit)
-int COLDTEMP = 60;
-int HOTTEMP  = 80;
+int coldTemp = 60;
+int hotTemp  = 80;
 int tempSwitch = 0;
 
 #define NeoPixel 3 //Pin for NewPixel
@@ -63,14 +63,14 @@ void updateColor() {
   uint8_t red, blue;
   float temp = mlx.readObjectTempF();
   
-  if (temp < COLDTEMP) temp = COLDTEMP;
-  if (temp > HOTTEMP) temp = HOTTEMP;
+  if (temp < coldTemp) temp = coldTemp;
+  if (temp > hotTemp) temp = hotTemp;
 
   // map temperature to red/blue color
   // hotter temp -> more red
-  red = map(temp, COLDTEMP, HOTTEMP, 0, 255);  
+  red = map(temp, coldTemp, hotTemp, 0, 255);  
   // hotter temp -> less blue
-  blue = map(temp, COLDTEMP, HOTTEMP, 255, 0);  
+  blue = map(temp, coldTemp, hotTemp, 255, 0);  
 
   colorWipe(strip.Color(red, 0, blue), 0);
   
@@ -81,7 +81,7 @@ void setup()
 {
  lcd.begin(16, 2);              // start the library
  lcd.setCursor(0,0);
- lcd.print("Temperature:"); // print a simple message
+ lcd.print("Temp: ("+ String(coldTemp) +" - "+ String(hotTemp) +")"); // print a simple message
  
  mlx.begin();  
  strip.begin();
@@ -91,33 +91,41 @@ void setup()
 void loop()
 {
  lcd.setCursor(9,1);            // move cursor to second line "1" and 9 spaces over
- lcd.setCursor(0,1);            // move to the begining of the second line
+ lcd.setCursor(0,0);            // move to the begining of the second line
  lcd_key = read_LCD_buttons();  // read the buttons
 
  switch (lcd_key)               // depending on which button was pushed, we perform an action
  {
    case btnRIGHT:
      {
+     lcd.clear();
+     lcd.setCursor(0,0); 
      lcd.print("Adjust Hot");
      tempSwitch = 0;
      break;
      }
    case btnLEFT:
      {
+     lcd.clear();
+     lcd.setCursor(0,0); 
      lcd.print("Adjust Cold");
      tempSwitch = 1;
      break;
      }
    case btnUP:
      {
-     lcd.print("COLDTEMP: " + COLDTEMP);
-     if (!tempSwitch) {COLDTEMP--;}
+     lcd.clear();
+     lcd.setCursor(0,0); 
+     if (tempSwitch) {coldTemp++; lcd.print("Cold Temp: " + String(coldTemp));}
+     else {hotTemp++; lcd.print("Hot Temp: " + String(hotTemp));}
      break;
      }
    case btnDOWN:
      {
-     lcd.print("Adjust Hot  ");
-     if (tempSwitch) {HOTTEMP--;}
+     lcd.clear();
+     lcd.setCursor(0,0); 
+     if (!tempSwitch) {hotTemp--; lcd.print("Hot Temp: " + String(hotTemp));}
+     else {coldTemp--; lcd.print("Cold Temp: " + String(coldTemp));}
      break;
      }
    case btnSELECT:
@@ -127,6 +135,10 @@ void loop()
      }
      case btnNONE:
      {
+     lcd.clear();
+       lcd.setCursor(0,0);
+     lcd.print("Temp: ("+ String(coldTemp) +" - "+ String(hotTemp) +")"); // print a simple message
+     lcd.setCursor(0,1);
      lcd.print(mlx.readObjectTempF());
      break;
      }
